@@ -1,0 +1,129 @@
+// Regles Firestore de production.
+//
+// Modele de securite (voir DECISIONS.md et TODO_SECURITE.md pour le detail) :
+// - Chaque appareil s'authentifie de facon anonyme aupres de Firebase (voir
+//   ensureSignedIn() dans public/js/firebase-config.js) : `request.auth.uid`
+//   est donc un identifiant verifie cote serveur, pas une valeur que le
+//   client peut falsifier (contrairement a un UUID stocke dans localStorage).
+// - Le role/camp de chaque joueur vit dans un document PRIVE separe
+//   (playersPrivate/{id}), lisible uniquement par le joueur lui-meme et par
+//   l'Hote (le "maitre du jeu" de la partie, qui a legitimement besoin de
+//   voir tous les roles pour orchestrer la nuit/le jour/la victoire - de la
+//   meme facon qu'un meneur de jeu en vrai). C'est ce qui empeche desormais
+//   de lire le role des autres joueurs depuis la console du navigateur.
+// - Seul le proprietaire d'un document joueur (ou l'Hote) peut le modifier :
+//   impossible de voter/agir a la place d'un autre joueur.
+// - Ce n'est PAS une architecture "zero trust" avec logique de jeu cote
+//   serveur (Cloud Functions) : l'Hote (un client comme les autres, pas un
+//   serveur de confiance) reste responsable du calcul des resultats de nuit,
+//   de l'attribution des roles, etc. Un joueur qui review-ingenierie
+//   entierement le protocole ET se fait passer pour l'Hote pourrait encore
+//   theoriquement tricher - mais cela demande bien plus qu'ouvrir les
+//   DevTools et lire un champ, ce qui etait le probleme initial.
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    match /lobbies/{code} {
+      function isHost() {
+        return isSignedIn() && resource.data.hostId == request.auth.uid;
+      }
+
+      allow get: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.hostId == request.auth.uid;
+      // L'Hote peut modifier n'importe quel champ. Exception : un Sherif dont
+      // la riposte est en attente (`sheriffRevenge.sheriffId` = lui) peut
+      // ecrire UNIQUEMENT le champ `sheriffRevenge` (son choix de cible),
+      // depuis son propre telephone - c'est la seule ecriture de la partie
+      // qu'un Joueur (autre que l'Hote) fait directement sur le document
+      // du salon.
+      allow update: if isSignedIn() && (
+        isHost() ||
+        (request.resource.data.diff(resource.data).affectedKeys().hasOnly(["sheriffRevenge"]) &&
+         resource.data.sheriffRevenge != null &&
+         resource.data.sheriffRevenge.sheriffId == request.auth.uid)
+      );
+      allow delete: if isHost();
+
+      function lobbyHostId() {
+        return get(/databases/$(database)/documents/lobbies/$(code)).data.hostId;
+      }
+      function lobbyStatus() {
+        return get(/databases/$(database)/documents/lobbies/$(code)).data.status;
+      }
+      function isLobbyHost() {
+        return isSignedIn() && lobbyHostId() == request.auth.uid;
+      }
+
+      // Donnees PUBLIQUES d'un joueur (nom, vivant/mort, pret, potions...).
+      // Aucun champ de role/camp/amoureux ici (voir playersPrivate).
+      match /players/{playerId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn() && request.auth.uid == playerId && lobbyStatus() == "lobby";
+        allow update: if isSignedIn() && (request.auth.uid == playerId || isLobbyHost());
+        allow delete: if isLobbyHost();
+      }
+
+      // Donnees PRIVEES d'un joueur (role, camp, amoureux, coequipiers,
+      // decouverte du Detective) : lisibles uniquement par le joueur
+      // concerne et par l'Hote. Seul l'Hote peut les modifier (un joueur ne
+      // peut pas s'attribuer un role) ; le joueur peut seulement creer son
+      // propre document vide en rejoignant le salon.
+      match /playersPrivate/{playerId} {
+        allow read: if isSignedIn() && (request.auth.uid == playerId || isLobbyHost());
+        allow create: if isSignedIn() && request.auth.uid == playerId && request.resource.data.role == null;
+        allow update: if isLobbyHost();
+        allow delete: if isLobbyHost();
+      }
+
+      // Actions de nuit, votes, election : partages entre les joueurs
+      // concernes (ex: les Assassins voient les votes des uns et des autres
+      // pour la mecanique d'unanimite) - pas de fuite de role possible ici,
+      // le contenu sensible (role decouvert par le Detective) vit a part
+      // dans playersPrivate. Validation d'auteur fine (par role/etape) non
+      // implementee ici : cf. TODO_SECURITE.md pour une eventuelle migration
+      // vers des Cloud Functions si un usage plus sensible l'exigeait.
+      match /nightActions/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+      match /dayVotes/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+      match /election/{docId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+
+      // Chat : chacun ne peut poster qu'en son propre nom, avec un message
+      // texte non vide et limite en taille (le client tronque deja a 500
+      // caracteres, mais ce n'etait avant verifie que cote client).
+      // Modification/suppression reservees a l'Hote (reinitialisation du
+      // chat entre deux parties, fermeture du salon).
+      match /chatLobby/{msgId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update, delete: if isLobbyHost();
+      }
+      match /chatGame/{msgId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn()
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+        allow update, delete: if isLobbyHost();
+      }
+    }
+  }
+}

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Assassins</title>
+  <meta name="theme-color" content="#0a0a0d" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="theme-dark">
+  <div id="bloodParticles" class="blood-particles" aria-hidden="true"></div>
+
+  <main class="landing">
+    <h1 class="game-title">ASSASSINS</h1>
+    <p class="subtitle">Un village. Une nuit. Des secrets.</p>
+
+    <div id="reconnectBanner" class="card hidden">
+      <p>Une session est en cours...</p>
+      <button id="reconnectBtn" class="primary">Reprendre ma partie</button>
+      <button id="forgetSessionBtn" class="secondary">Oublier cette session</button>
+    </div>
+
+    <div class="card landing-form">
+      <label for="pseudoInput">Pseudo</label>
+      <input type="text" id="pseudoInput" maxlength="24" placeholder="Votre pseudo" />
+
+      <div class="landing-actions">
+        <button type="button" id="createGameBtn" class="primary big">Creer une partie</button>
+        <button type="button" id="toggleJoinBtn" class="secondary big">Rejoindre</button>
+      </div>
+
+      <form id="joinForm" class="join-expand hidden">
+        <label for="joinCode">Code du salon</label>
+        <input type="text" id="joinCode" maxlength="5" required placeholder="Ex: ABCD" style="text-transform:uppercase" />
+        <button type="submit" class="primary">Valider</button>
+      </form>
+    </div>
+
+    <div class="landing-secondary-actions">
+      <button type="button" id="rulesBtn" class="secondary rules-btn">📖 Regles du jeu</button>
+      <button type="button" id="installAppBtn" class="secondary rules-btn hidden">📲 Installer l'app</button>
+    </div>
+
+    <p id="errorMsg" class="error hidden"></p>
+  </main>
+
+  <div id="rulesModal" class="modal-overlay hidden">
+    <div class="modal rules-modal">
+      <button id="closeRulesModalBtn" class="modal-close">&times;</button>
+      <h2>📖 Regles du jeu</h2>
+      <p>Chaque nuit, des roles secrets agissent dans l'ombre. Chaque jour, le village debat et vote. Le but : demasquer et eliminer la menace avant qu'elle ne prenne le dessus.</p>
+
+      <h3>Deroulement d'une partie</h3>
+      <ol>
+        <li>L'hote cree un salon et choisit les roles en jeu.</li>
+        <li>Les joueurs rejoignent avec le code, puis se declarent "prets".</li>
+        <li>Election d'un Gouverneur : il departagera les egalites lors des votes du village.</li>
+        <li>Chaque nuit, les roles agissent chacun leur tour, dans un ordre precis.</li>
+        <li>Chaque jour, le village decouvre les evenements de la nuit puis vote pour eliminer un suspect.</li>
+        <li>La partie continue (nuit, jour, nuit...) jusqu'a la victoire d'un camp.</li>
+      </ol>
+
+      <h3>Ordre de la nuit</h3>
+      <ol>
+        <li>💘 <strong>Le Destin</strong> (1ere nuit uniquement) designe deux Ames Soeurs.</li>
+        <li>🔍 <strong>Le Detective</strong> sonde le role reel d'un joueur.</li>
+        <li>🗡️ <strong>Les Assassins</strong> (avec le Tueur en Serie et le Corrupteur, qui font partie du meme camp) choisissent une victime a l'unanimite.</li>
+        <li>🔪 <strong>Le Tueur en Serie</strong> peut tuer une victime bonus, tant qu'aucun Assassin n'est mort.</li>
+        <li>😈 <strong>Le Corrupteur</strong> peut convertir la victime des Assassins en Assassin au lieu de la laisser mourir (une fois par partie).</li>
+        <li>🧪 <strong>Le Chimiste</strong> peut utiliser sa potion de Vie (sauver une victime de la nuit) et sa potion de Mort (tuer un joueur), chacune une seule fois dans la partie.</li>
+      </ol>
+
+      <h3>Camps et conditions de victoire</h3>
+      <ul>
+        <li>🕊️ <strong>Citoyens</strong> : gagnent quand tous les Assassins, le Tueur en Serie et le Corrupteur sont morts.</li>
+        <li>🗡️ <strong>Assassins</strong> : gagnent des que leur nombre egale ou depasse celui des Citoyens encore vivants.</li>
+        <li>💞 <strong>Ames Soeurs</strong> : gagnent si elles terminent la partie ensemble, seules survivantes.</li>
+        <li>⚰️ <strong>Le Martyr</strong> : gagne seul s'il est elimine des le tout premier vote du village.</li>
+        <li>🪓 <strong>Le Psychopathe</strong> : gagne seul s'il est elimine par un vote du village, a n'importe quel moment.</li>
+      </ul>
+
+      <h3>Le Sherif</h3>
+      <p>S'il meurt (de nuit comme de jour), le Sherif riposte immediatement : il a une seconde pour abattre un dernier joueur avant de succomber.</p>
+    </div>
+  </div>
+
+  <div id="iosInstallModal" class="modal-overlay hidden">
+    <div class="modal">
+      <button id="closeIosInstallModalBtn" class="modal-close">&times;</button>
+      <h2>📲 Installer l'app</h2>
+      <p>Sur iPhone/iPad, l'installation se fait en deux gestes depuis Safari :</p>
+      <ol>
+        <li>Appuyez sur le bouton <strong>Partager</strong> (le carre avec une fleche vers le haut ⬆️), en bas de l'ecran.</li>
+        <li>Faites defiler et appuyez sur <strong>"Sur l'ecran d'accueil"</strong>.</li>
+      </ol>
+      <p class="hint">L'icone Assassins apparaitra alors sur votre ecran d'accueil, comme une vraie app.</p>
+    </div>
+  </div>
+
+  <div id="toastNotice" class="toast hidden"></div>
+
+  <script type="module">
+    import { createLobby, joinLobby, loadSession, clearSession, verifyHostSessionValid, verifyPlayerSessionValid } from "./js/lobby.js";
+    import { guardedClick, guardedSubmit } from "./js/ui-utils.js";
+    import { initNetworkStatus } from "./js/network-status.js";
+    import { initInstallButton } from "./js/pwa-install.js";
+
+    initNetworkStatus();
+    initInstallButton();
+
+    const LAST_NAME_KEY = "assassins_last_name";
+
+    function showError(msg) {
+      const el = document.getElementById("errorMsg");
+      el.textContent = msg;
+      el.classList.remove("hidden");
+    }
+
+    // Pre-remplit le pseudo avec le dernier utilise, s'il y en a un.
+    (function prefillPseudo() {
+      const lastName = localStorage.getItem(LAST_NAME_KEY);
+      if (lastName) document.getElementById("pseudoInput").value = lastName;
+    })();
+
+    async function checkExistingSession() {
+      const session = loadSession();
+      if (!session) return;
+      const valid = session.type === "host"
+        ? await verifyHostSessionValid(session.code, session.hostId)
+        : await verifyPlayerSessionValid(session.code, session.playerId);
+      if (!valid) { clearSession(); return; }
+      document.getElementById("reconnectBanner").classList.remove("hidden");
+      document.getElementById("reconnectBtn").addEventListener("click", () => {
+        window.location.href = session.type === "host" ? "host.html" : "player.html";
+      });
+      document.getElementById("forgetSessionBtn").addEventListener("click", () => {
+        clearSession();
+        document.getElementById("reconnectBanner").classList.add("hidden");
+      });
+    }
+
+    guardedClick(document.getElementById("createGameBtn"), async () => {
+      try {
+        await createLobby({});
+        window.location.href = "host.html";
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    document.getElementById("toggleJoinBtn").addEventListener("click", () => {
+      const form = document.getElementById("joinForm");
+      const opening = form.classList.contains("hidden");
+      form.classList.toggle("hidden");
+      document.getElementById("toggleJoinBtn").textContent = opening ? "Annuler" : "Rejoindre";
+      if (opening) document.getElementById("joinCode").focus();
+    });
+
+    // guardedSubmit desactive le bouton "Valider" des le premier clic : sans
+    // ca, un appui repete (spam) pendant le court delai reseau creait
+    // plusieurs joueurs pour la meme personne dans le salon.
+    guardedSubmit(document.getElementById("joinForm"), async () => {
+      const name = document.getElementById("pseudoInput").value.trim();
+      const code = document.getElementById("joinCode").value;
+      if (!name) {
+        showError("Entrez un pseudo avant de rejoindre.");
+        return;
+      }
+      try {
+        await joinLobby(code, name);
+        localStorage.setItem(LAST_NAME_KEY, name);
+        window.location.href = "player.html";
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    document.getElementById("rulesBtn").addEventListener("click", () => {
+      document.getElementById("rulesModal").classList.remove("hidden");
+    });
+    document.getElementById("closeRulesModalBtn").addEventListener("click", () => {
+      document.getElementById("rulesModal").classList.add("hidden");
+    });
+    // Clic en dehors du contenu (sur le fond assombri) = fermer, pratique
+    // quand on a scrolle loin de la croix pour tout lire.
+    document.getElementById("rulesModal").addEventListener("click", (e) => {
+      if (e.target.id === "rulesModal") document.getElementById("rulesModal").classList.add("hidden");
+    });
+
+    checkExistingSession();
+
+    // Notification ephemere (ex: "l'Hote a ferme le salon"), deposee par
+    // player.html/host.html avant une redirection, affichee ici puis effacee.
+    (function showPendingToast() {
+      const message = sessionStorage.getItem("assassins_notice");
+      if (!message) return;
+      sessionStorage.removeItem("assassins_notice");
+      const toast = document.getElementById("toastNotice");
+      toast.textContent = message;
+      toast.classList.remove("hidden");
+      setTimeout(() => toast.classList.add("hidden"), 4000);
+    })();
+
+    // Particules "sang" en fond, purement decoratives.
+    (function spawnBloodParticles() {
+      const container = document.getElementById("bloodParticles");
+      const count = 18;
+      for (let i = 0; i < count; i++) {
+        const drop = document.createElement("span");
+        drop.className = "blood-drop";
+        const size = 4 + Math.random() * 7;
+        const duration = 7 + Math.random() * 8;
+        const delay = -(Math.random() * duration);
+        drop.style.setProperty("--x", `${Math.random() * 100}%`);
+        drop.style.setProperty("--size", `${size}px`);
+        drop.style.setProperty("--duration", `${duration}s`);
+        drop.style.setProperty("--delay", `${delay}s`);
+        drop.style.setProperty("--opacity", `${0.3 + Math.random() * 0.3}`);
+        drop.style.setProperty("--drift", `${-20 + Math.random() * 40}px`);
+        container.appendChild(drop);
+      }
+    })();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

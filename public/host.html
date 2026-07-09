@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Assassins - Hote</title>
+  <meta name="theme-color" content="#0a0a0d" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="theme-dark host-body">
+  <header class="topbar">
+    <span class="lobby-code">Code : <strong id="lobbyCodeDisplay">----</strong></span>
+    <span id="dayNightBadge" class="day-night-badge"></span>
+    <button id="closeLobbyBtn" class="danger-outline small">Fermer le salon</button>
+  </header>
+
+  <div id="dayNightTransition" class="day-night-transition hidden"></div>
+
+  <main id="hostApp">
+    <!-- ECRAN DE CONFIGURATION DES ROLES (avant ouverture du salon) -->
+    <section id="configScreen" class="screen">
+      <h1>Configuration de la partie</h1>
+      <p class="hint">Choisissez la composition avant d'ouvrir le salon aux joueurs. Personne ne peut encore rejoindre.</p>
+      <div class="card">
+        <h2>Roles</h2>
+        <div id="roleConfigForm" class="role-config-form"></div>
+        <p id="configHint" class="hint"></p>
+      </div>
+      <button id="validateConfigBtn" class="primary big" disabled>Valider la configuration et ouvrir le salon</button>
+    </section>
+
+    <!-- ECRAN D'ATTENTE (salon ouvert) -->
+    <section id="setupScreen" class="screen hidden">
+      <h1>Salon ouvert</h1>
+      <div class="setup-grid">
+        <div class="card">
+          <h2>Composition</h2>
+          <p id="playerCountLabel" class="hint"></p>
+          <button id="backToConfigBtn" class="secondary small">Modifier la configuration</button>
+        </div>
+        <div class="card">
+          <h2>Joueurs connectes</h2>
+          <ul id="setupPlayerList" class="player-list"></ul>
+        </div>
+        <div class="card">
+          <h2>Chat du salon</h2>
+          <div id="lobbyChatMessages" class="chat-box"></div>
+          <form id="lobbyChatForm" class="chat-form">
+            <input type="text" id="lobbyChatInput" placeholder="Votre message..." maxlength="500" />
+            <button type="submit">Envoyer</button>
+          </form>
+        </div>
+      </div>
+      <p id="launchHint" class="hint"></p>
+      <button id="launchGameBtn" class="primary big" disabled>Lancer la partie</button>
+    </section>
+
+    <!-- ECRAN DE JEU -->
+    <section id="gameScreen" class="screen hidden">
+      <div class="game-grid">
+        <div class="card roster-card">
+          <h2>Joueurs</h2>
+          <ul id="fullPlayerList" class="player-list"></ul>
+        </div>
+        <div class="card phase-card">
+          <div id="phasePanel"></div>
+        </div>
+      </div>
+      <button id="chatBtn" class="chat-fab">💬 Chat<span id="chatBadge" class="chat-badge hidden"></span></button>
+    </section>
+
+    <!-- ECRAN DE FIN -->
+    <section id="endScreen" class="screen hidden"></section>
+  </main>
+
+  <!-- Modale : Chat en partie (l'hote voit tout, y compris les messages des morts) -->
+  <div id="chatModal" class="modal-overlay hidden">
+    <div class="modal chat-modal">
+      <button id="closeChatModalBtn" class="modal-close">&times;</button>
+      <h2>Chat de la partie</h2>
+      <div id="chatModalMessages" class="chat-box"></div>
+      <form id="chatModalForm" class="chat-form">
+        <input type="text" id="chatModalInput" placeholder="Votre message (visible de tous)..." maxlength="500" />
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modale : description d'un role (bouton "?" en configuration) -->
+  <div id="roleInfoModal" class="modal-overlay hidden">
+    <div class="modal role-modal">
+      <button id="closeRoleInfoModalBtn" class="modal-close">&times;</button>
+      <h2 id="roleInfoModalTitle"></h2>
+      <p id="roleInfoModalDesc"></p>
+      <p id="roleInfoModalVictory" class="victory-text"></p>
+    </div>
+  </div>
+
+  <!-- Modale : egalite a l'election du Gouverneur, l'Hote tranche -->
+  <div id="electionTieModal" class="modal-overlay hidden">
+    <div class="modal tie-modal">
+      <h2>⚖️ Egalite !</h2>
+      <p>Choisissez qui devient Gouverneur :</p>
+      <div id="electionTieChoices" class="choice-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modale : confirmation de fermeture du salon -->
+  <div id="confirmCloseModal" class="modal-overlay hidden">
+    <div class="modal confirm-modal">
+      <h2>Fermer le salon ?</h2>
+      <p>Tous les joueurs connectes seront immediatement renvoyes a l'accueil.</p>
+      <div class="confirm-actions">
+        <button id="confirmCloseYesBtn" class="danger-outline big">Oui, fermer</button>
+        <button id="confirmCloseNoBtn" class="secondary big">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/host.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>

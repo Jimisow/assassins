@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Assassins - Joueur</title>
+  <meta name="theme-color" content="#0a0a0d" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="theme-dark player-body">
+  <header class="topbar">
+    <span class="lobby-code">Salon : <strong id="lobbyCodeDisplay">----</strong></span>
+    <span id="dayNightBadge" class="day-night-badge"></span>
+    <span id="statusBanner" class="status-banner"></span>
+  </header>
+
+  <div id="dayNightTransition" class="day-night-transition hidden"></div>
+
+  <main id="playerApp">
+    <div class="player-actions-row">
+      <button id="showRoleBtn" class="primary">Voir mon role</button>
+      <button id="readyBtn" class="secondary"></button>
+    </div>
+
+    <section id="lobbyWaitScreen" class="screen">
+      <div class="card">
+        <h2>Chat du salon</h2>
+        <div id="lobbyChatMessages" class="chat-box"></div>
+        <form id="lobbyChatForm" class="chat-form">
+          <input type="text" id="lobbyChatInput" placeholder="Votre message..." maxlength="500" />
+          <button type="submit">Envoyer</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen hidden">
+      <div class="card phase-card">
+        <div id="gamePhasePanel"></div>
+      </div>
+    </section>
+
+    <button id="chatBtn" class="chat-fab hidden">💬 Chat<span id="chatBadge" class="chat-badge hidden"></span></button>
+
+    <section id="endScreen" class="screen hidden"></section>
+
+    <div class="card roster-card">
+      <h2>Joueurs</h2>
+      <ul id="playerList" class="player-list"></ul>
+    </div>
+  </main>
+
+  <!-- Modale : Voir mon role -->
+  <div id="roleModal" class="modal-overlay hidden">
+    <div class="modal role-modal">
+      <button id="closeRoleModalBtn" class="modal-close">&times;</button>
+      <h2 id="roleModalTitle"></h2>
+      <p id="roleModalDesc"></p>
+      <p id="roleModalVictory" class="victory-text"></p>
+      <p id="roleModalLover" class="lover-text"></p>
+    </div>
+  </div>
+
+  <!-- Modale : Chat en partie (flux unique ; les vivants ne voient pas les morts) -->
+  <div id="chatModal" class="modal-overlay hidden">
+    <div class="modal chat-modal">
+      <button id="closeChatModalBtn" class="modal-close">&times;</button>
+      <h2>Chat de la partie</h2>
+      <div id="chatModalMessages" class="chat-box"></div>
+      <form id="chatModalForm" class="chat-form">
+        <input type="text" id="chatModalInput" placeholder="Votre message..." maxlength="500" />
+        <button type="submit">Envoyer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modale : action/choix en cours du joueur (role de nuit, candidature,
+       vote...), tres visible, pas de croix - l'action doit etre validee pour
+       que la partie continue -->
+  <div id="actionModal" class="modal-overlay hidden">
+    <div class="modal action-modal">
+      <div id="actionModalBody"></div>
+    </div>
+  </div>
+
+  <!-- Modale : egalite au vote du village, reservee au Gouverneur -->
+  <div id="tieBreakModal" class="modal-overlay hidden">
+    <div class="modal tie-modal">
+      <h2>⚖️ Egalite !</h2>
+      <p>En tant que Gouverneur, departagez :</p>
+      <div id="tieBreakChoices" class="choice-grid"></div>
+    </div>
+  </div>
+
+  <!-- Modale bloquante : riposte du Sherif -->
+  <div id="sheriffModal" class="modal-overlay hidden blocking">
+    <div class="modal sheriff-modal shake-loop">
+      <h2>Vous mourez... mais il vous reste une balle !</h2>
+      <p>Choisissez immediatement votre cible :</p>
+      <p class="countdown" id="sheriffCountdown">1.00s</p>
+      <div id="sheriffTargets" class="choice-grid"></div>
+    </div>
+  </div>
+
+  <script type="module" src="js/player.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(() => {}));
+    }
+  </script>
+</body>
+</html>
