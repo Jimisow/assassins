@@ -2,26 +2,36 @@
 // chargement rapide. Le jeu depend de Firestore pour tout le temps reel, donc
 // aucun objectif de fonctionnement 100% hors-ligne : les requetes vers
 // Firebase (autre origine) ne sont jamais interceptees ici.
-const CACHE_NAME = "assassins-shell-v3";
+//
+// Chemins RELATIFS (pas de "/" en tete) : resolus par le navigateur par
+// rapport a l'URL de ce script lui-meme (self.location), pas au domaine
+// racine. Necessaire car GitHub Pages sert ce projet comme "site de projet"
+// sous un sous-chemin (https://<utilisateur>.github.io/assassins/), pas a la
+// racine du domaine - un chemin absolu comme "/index.html" pointait donc vers
+// https://<utilisateur>.github.io/index.html (404) au lieu de
+// .../assassins/index.html. Meme raison pour `start_url`/`scope` dans
+// manifest.json.
+const CACHE_NAME = "assassins-shell-v4";
 const SHELL_ASSETS = [
-  "/",
-  "/index.html",
-  "/host.html",
-  "/player.html",
-  "/manifest.json",
-  "/css/style.css",
-  "/js/firebase-config.js",
-  "/js/lobby.js",
-  "/js/chat.js",
-  "/js/roles.js",
-  "/js/night-cycle.js",
-  "/js/host.js",
-  "/js/player.js",
-  "/js/ui-utils.js",
-  "/js/network-status.js",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon.svg",
+  "./",
+  "./index.html",
+  "./host.html",
+  "./player.html",
+  "./manifest.json",
+  "./css/style.css",
+  "./js/firebase-config.js",
+  "./js/lobby.js",
+  "./js/chat.js",
+  "./js/roles.js",
+  "./js/night-cycle.js",
+  "./js/host.js",
+  "./js/player.js",
+  "./js/ui-utils.js",
+  "./js/network-status.js",
+  "./js/pwa-install.js",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/icon.svg",
 ];
 
 self.addEventListener("install", (event) => {
