@@ -323,6 +323,21 @@ regression.
    collection, relecture complete de `firestore.rules` pour confirmer
    qu'aucune autre collection n'a la faille corrigee en session 14.
 
+### Mise en ligne sur GitHub Pages + bug PWA corrige (session 16)
+
+Details complets dans `DECISIONS.md`. **Le jeu est en ligne :
+https://jimisow.github.io/assassins/** (depot public
+`github.com/Jimisow/assassins`, deploiement automatique a chaque push via
+GitHub Actions).
+
+**Bug corrige** : l'app installee (PWA) affichait une erreur 404 au
+lancement. Cause : `manifest.json` et `service-worker.js` utilisaient des
+chemins absolus (`/index.html`), qui pointaient hors du projet puisque
+GitHub Pages sert ce depot sous `/assassins/`, pas a la racine du domaine.
+Passes en chemins relatifs — fonctionne desormais aussi bien en local que
+sur GitHub Pages. Verifie directement sur le site en ligne : installation,
+activation du Service Worker et mise en cache toutes confirmees.
+
 ## Fonctionnalites completes
 
 - **Lobby** : creation d'un salon (code unique 4-5 caracteres) qui demarre en

@@ -5,6 +5,40 @@ charges, ainsi qu'un bug critique decouvert et corrige pendant les tests. A
 lire avant de modifier le projet : plusieurs regles de jeu "non ecrites"
 vivent uniquement ici.
 
+## Mise en ligne sur GitHub Pages + bug PWA corrige (session 16)
+
+- **Depot GitHub public cree et deploye** : `github.com/Jimisow/assassins`,
+  avec un workflow GitHub Actions (`.github/workflows/deploy-pages.yml`) qui
+  publie automatiquement le dossier `public/` sur GitHub Pages a chaque push
+  sur `main` (`actions/upload-pages-artifact` + `actions/deploy-pages` :
+  supporte de publier un sous-dossier precis, contrairement au mode classique
+  "Deploy from a branch" limite a `/` ou `/docs`). Site en ligne :
+  https://jimisow.github.io/assassins/
+- **Bug corrige : l'app installee affichait une erreur 404 au lancement.**
+  Cause : GitHub Pages sert un depot de projet (par opposition a un site
+  utilisateur/organisation `<compte>.github.io`) sous un SOUS-CHEMIN
+  (`/assassins/`), pas a la racine du domaine. Or `manifest.json` avait
+  `start_url: "/index.html"` et `scope: "/"` — des chemins ABSOLUS
+  (relatifs a la racine du domaine) qui pointaient donc vers
+  `https://jimisow.github.io/index.html` (hors du projet, 404) au lieu de
+  `https://jimisow.github.io/assassins/index.html`. Meme souci, plus grave,
+  dans `service-worker.js` : la liste des fichiers a mettre en cache
+  (`SHELL_ASSETS`) utilisait aussi des chemins absolus - `cache.addAll()`
+  echoue integralement (tout ou rien) des qu'UNE SEULE requete echoue, donc
+  l'installation du Service Worker echouait silencieusement en entier sur
+  GitHub Pages, meme si ce n'etait pas ce qui causait le 404 visible par
+  l'utilisateur (qui venait du `start_url`).
+  **Corrige** en passant tous ces chemins en RELATIFS (`"./index.html"`,
+  `"./"`, etc.) : resolus par le navigateur par rapport a l'URL du fichier
+  qui les declare (le manifest, ou le script du Service Worker lui-meme),
+  ils pointent donc automatiquement au bon endroit aussi bien en local
+  (servi a la racine) que sur GitHub Pages (servi sous `/assassins/`), sans
+  configuration specifique a l'environnement. Cache renomme
+  `assassins-shell-v4` pour forcer son renouvellement chez qui aurait deja
+  tente une installation cassee. Verifie directement sur le site en ligne
+  (resolution du `start_url` du manifest, activation reelle du Service
+  Worker, contenu du cache) : tout fonctionne desormais correctement.
+
 ## Resilience reseau, installation PWA, verification finale (session 15)
 
 - **Resilience 4G/5G/wifi** : `firebase-config.js` avait deja
