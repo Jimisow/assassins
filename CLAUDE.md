@@ -200,6 +200,12 @@ de reserve, donc on ne peut pas frapper monnaie plus vite qu'en jouant.
 qu'un bouton et l'appel, sur le modele de `D-Track/src/ui/accountButton.js`
 (`openShopScreen`, qui lit les tokens du jeu pour habiller l'ecran).
 
+**Les PRIX se modifient depuis le panel admin de kump.fr** (`/admin` > Jeux >
+Boutique) depuis le 2026-08-30 : ils vivent en base, par-dessus le catalogue de
+`shops/assassins.ts`, et s'appliquent sans aucun deploiement. Quand l'ecran de
+boutique sera branche ici, il les lira automatiquement via `getShopCatalog()` —
+**ne jamais recopier un prix dans ce depot**.
+
 ### Pièges à ne pas défaire
 
 - **Seuls les JOUEURS enregistrent une partie, pas l'Hôte.** L'Hôte est maître
@@ -252,7 +258,16 @@ Sans build, pas de variable d'environnement : `js/kump.js` choisit l'URL à
 l'exécution d'après le nom d'hôte (localhost → `http://localhost:3000`,
 sinon `API_PRODUCTION`).
 
-⚠️ **`API_PRODUCTION` pointe sur `https://kump-studio.vercel.app`** — à mettre
+⚠️ **Le domaine `https://www.kump.fr` EST branché depuis le 2026-08-30**
+(constaté, voir `kump.fr > CLAUDE.md > Déploiement`). Les deux URL répondent,
+donc **rien n'est cassé** — mais ce jeu dépend d'une URL technique plutôt que du
+domaine. À basculer au prochain passage ici, dans le MÊME passage que
+`npm run sync:kump` et l'incrément de `CACHE_NAME` du service worker : sinon
+les navigateurs qui ont déjà le jeu en cache continueront d'appeler l'ancienne
+URL sans que rien ne le signale.
+
+*(Ligne d'origine, conservée pour le contexte :)* **`API_PRODUCTION` pointe sur
+`https://kump-studio.vercel.app`** — à mettre
 à jour le jour où le domaine `kump.fr` sera branché sur le projet Vercel (voir
 `kump.fr > CLAUDE.md > Déploiement`).
 
