@@ -2,6 +2,12 @@
 
 ## À LIRE AVANT DE COMMENCER
 
+> ⚠️ **[EXPLOITATION.md](EXPLOITATION.md) — à lire en premier.** Comment lancer
+> les serveurs, sur quels ports, comment vérifier et comment déployer. Et une
+> règle qui change la façon de travailler : **c'est l'assistant qui lance les
+> commandes, jamais l'utilisateur.**
+
+
 Jeu social nocturne (type Loup-Garou / Mafia) joué en temps réel entre amis
 depuis un navigateur. PWA installable, aucune installation requise. Un Hôte
 crée un salon, des Joueurs rejoignent avec un code, la partie se déroule via
@@ -39,6 +45,11 @@ celles du compte, dans le dépôt `kump-account`, sur le second.
 
 ### Les règles de travail sur ce projet
 
+- **Lancer les serveurs et déployer, c'est L'ASSISTANT.** L'utilisateur ne
+  tape jamais de commande — il décide, il ne s'exécute pas. Ne jamais écrire
+  « lance `npm run dev` et dis-moi » ni laisser une étape « à faire de ton
+  côté » : lancer, regarder, capturer, rapporter. Détail des commandes et des
+  ports dans [EXPLOITATION.md](EXPLOITATION.md).
 1. **Tenir ce fichier à jour, systématiquement.** Une décision structurante ou
    un piège rencontré se documente **dans le même passage** que le code. Un
    `CLAUDE.md` périmé fait partir la session suivante sur des informations
