@@ -269,6 +269,11 @@ absent ne casse rien : l'écran retombe sur les identifiants bruts.
 
 ## Développement local
 
+> ⚠️ **C'est l'ASSISTANT qui lance ces commandes, jamais l'utilisateur.**
+> Ports à utiliser, ordre de déploiement et pièges silencieux :
+> [EXPLOITATION.md](EXPLOITATION.md).
+
+
 ```bash
 npm install
 npm run sync:kump
