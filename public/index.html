@@ -45,6 +45,7 @@
     <div class="landing-secondary-actions">
       <button type="button" id="rulesBtn" class="secondary rules-btn">📖 Regles du jeu</button>
       <button type="button" id="installAppBtn" class="secondary rules-btn hidden">📲 Installer l'app</button>
+      <button type="button" id="accountBtn" class="secondary rules-btn">👤 Compte</button>
     </div>
 
     <p id="errorMsg" class="error hidden"></p>
@@ -105,6 +106,34 @@
 
   <div id="toastNotice" class="toast hidden"></div>
 
+  <!-- Import map : donne au navigateur l'adresse des modules désignés par un
+       nom nu (`firebase/app`, `kump-account`). Assassins n'a aucun bundler —
+       sans elle, `import ... from 'kump-account'` échouerait.
+
+       ⚠️ Doit être déclarée AVANT tout <script type="module"> de la page :
+       une import map arrivant après le premier module est ignorée, et les
+       imports échouent avec « Failed to resolve module specifier ».
+
+       Firebase est épinglé sur 10.12.2, EXACTEMENT la version que
+       js/firebase-config.js charge par URL complète : même URL = un seul
+       téléchargement, une seule instance du SDK. Faire diverger les deux
+       chargerait Firebase deux fois (~150 Ko de plus) avec deux instances
+       d'Auth qui s'ignorent. Si l'une des deux change de version, changer
+       l'autre dans le même passage.
+
+       Les chemins de `kump-account` sont RELATIFS (`./js/...`) pour la même
+       raison que ceux du manifest et du service worker : GitHub Pages sert ce
+       projet sous /assassins/, pas à la racine du domaine. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+      "kump-account": "./js/vendor/kump-account/index.js"
+    }
+  }
+  </script>
   <script type="module">
     import { createLobby, joinLobby, loadSession, clearSession, verifyHostSessionValid, verifyPlayerSessionValid } from "./js/lobby.js";
     import { guardedClick, guardedSubmit } from "./js/ui-utils.js";
@@ -113,6 +142,23 @@
 
     initNetworkStatus();
     initInstallButton();
+
+    // --- Compte KUMP -----------------------------------------------------
+    // Chargement PARESSEUX : `js/account.js` tire `kump-account`, donc tout le
+    // SDK Firebase du projet KUMP. L'accueil ne doit pas le payer tant que le
+    // joueur ne clique pas — il vient peut-etre juste rejoindre une partie.
+    // Seul le pseudo memorise localement est lu ici, sans reseau.
+    const accountBtn = document.getElementById("accountBtn");
+    function refreshAccountBtn(nom) {
+      accountBtn.textContent = nom ? "\u{1F464} " + nom : "\u{1F464} Compte";
+    }
+    try {
+      refreshAccountBtn(localStorage.getItem("assassins.kumpName"));
+    } catch { /* stockage indisponible */ }
+    accountBtn.addEventListener("click", async () => {
+      const compte = await import("./js/account.js");
+      compte.ouvrirCompte({ onChange: () => refreshAccountBtn(compte.nomLocal()) });
+    });
 
     const LAST_NAME_KEY = "assassins_last_name";
 

@@ -105,6 +105,14 @@ async function init() {
 function render() {
   if (!lobbyData || !me) return;
 
+  // Premier statut de jeu vu : la partie commence maintenant. Un
+  // rafraichissement en cours de partie remet ce chrono a zero — la duree
+  // envoyee sera alors sous-estimee, jamais surestimee ; c'est le bon sens de
+  // l'erreur (elle coute moins cher en reserve de temps reel cote serveur).
+  if (kumpDebutPartie === null && lobbyData.status !== "lobby" && lobbyData.status !== "config" && lobbyData.status !== "ended") {
+    kumpDebutPartie = Date.now();
+  }
+
   renderRoster();
   renderStatusBanner();
   updateDayNightBadge();
@@ -119,6 +127,12 @@ function render() {
   const rosterCard = document.querySelector(".roster-card");
 
   if (lobbyData.status === "lobby" || lobbyData.status === "config") {
+    // Retour au salon = "Rejouer". La trace de la partie precedente doit
+    // repartir a zero, sinon le verrou anti-doublon resterait arme et la
+    // partie suivante ne serait JAMAIS enregistree — et sa duree serait
+    // comptee depuis la partie d'avant.
+    kumpDebutPartie = null;
+    kumpPartieEnvoyee = false;
     lobbyScreen.classList.remove("hidden");
     gameScreen.classList.add("hidden");
     endScreen.classList.add("hidden");
@@ -136,6 +150,7 @@ function render() {
     // joueurs "brute" (sans role) devient redondante a ce stade.
     rosterCard.classList.add("hidden");
     renderEnd();
+    envoyerPartieAuCompteKump();
   } else {
     lobbyScreen.classList.add("hidden");
     gameScreen.classList.remove("hidden");
@@ -169,6 +184,16 @@ function updateDayNightBadge() {
 // correct meme apres un "Rejouer" (le meme onglet reste ouvert, sans
 // rechargement, donc sans reinitialisation des variables locales du module).
 let lastTransitionStatus = null;
+
+// --- Compte KUMP -------------------------------------------------------------
+// Instant ou la partie a REELLEMENT commence (premier statut de jeu), pas
+// l'arrivee dans le salon : sinon l'attente des autres joueurs serait comptee
+// comme du temps de jeu, et une partie de 10 minutes precedee d'une heure de
+// salon en vaudrait soixante-dix.
+let kumpDebutPartie = null;
+// L'ecran de fin se redessine a chaque snapshot Firestore : sans ce verrou, la
+// meme partie partirait plusieurs fois.
+let kumpPartieEnvoyee = false;
 function maybeShowDayNightTransition() {
   const prev = lastTransitionStatus;
   if (lobbyData.status === prev) return;
@@ -984,6 +1009,44 @@ const CAMP_META = {
   psychopathe: { icon: "🔪", label: "Le Psychopathe", color: "blood" },
   amoureux: { icon: "💞", label: "Les Ames Soeurs", color: "purple" },
 };
+
+/**
+ * Envoie la partie terminee au compte KUMP (une seule fois).
+ *
+ * Chargement PARESSEUX du module : un joueur qui ne se sert jamais du compte
+ * ne telecharge le SDK Firebase du projet KUMP qu'a la toute fin de sa
+ * premiere partie, et jamais pendant qu'il joue.
+ *
+ * ⚠️ CES STATISTIQUES SONT DECLAREES. Le serveur de kump.fr ne peut pas les
+ * verifier : le resultat d'une nuit est calcule par le navigateur de l'Hote,
+ * dans un projet Firebase auquel il n'a aucun acces. C'est la limite deja
+ * documentee dans TODO_SECURITE.md, elle n'a pas change. Jamais de recompense
+ * reelle adossee a ces chiffres.
+ *
+ * Ne bloque rien et n'affiche aucune erreur : l'ecran de victoire est le
+ * moment le moins approprie pour signaler un probleme de reseau. Une partie
+ * qui ne part pas est mise en file d'attente et repartira a la suivante.
+ */
+async function envoyerPartieAuCompteKump() {
+  if (kumpPartieEnvoyee || !me || !me.role || !me.camp) return;
+  kumpPartieEnvoyee = true;
+  try {
+    const kump = await import("./kump.js");
+    await kump.recordGame({
+      role: me.role,
+      camp: me.camp,
+      won: Boolean(lobbyData.winningPlayerIds && lobbyData.winningPlayerIds.includes(PLAYER_ID)),
+      survived: me.isAlive === true,
+      players: publicPlayers.length,
+      // `nightNumber` vaut 0 tant qu'aucune nuit n'est passee ; le serveur
+      // exige au moins 1 (une partie sans nuit n'existe pas).
+      nights: Math.max(1, lobbyData.nightNumber || 1),
+      durationMs: kumpDebutPartie ? Date.now() - kumpDebutPartie : 0,
+    });
+  } catch (error) {
+    console.warn("[kump] partie non enregistree", error);
+  }
+}
 
 // Garde anti-clignotement (voir renderRoster) : evite de reecrire cet ecran
 // (donc de redemarrer ses animations d'entree) si rien n'a change.

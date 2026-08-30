@@ -5,10 +5,12 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "sync:kump": "node scripts/sync-kump.js"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "kump-account": "github:Jimisow/kump-account"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"

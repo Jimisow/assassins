@@ -838,3 +838,166 @@ label { display: block; margin: 0.6em 0 0.2em; color: var(--text-dim); font-size
   font-weight: 600;
 }
 .network-status-banner.hidden { display: none; }
+
+/* ============================================================
+   Compte KUMP (js/account.js)
+   Reutilise .modal-overlay / .modal / .modal-close deja definis plus haut :
+   seul le CONTENU a besoin de styles propres. L'ecran de compte doit avoir
+   l'air d'appartenir a Assassins, pas d'un service tiers colle par-dessus —
+   d'ou l'usage des memes variables de theme (or, pourpre spectral, rouge sang)
+   plutot qu'une palette importee.
+   ============================================================ */
+
+.account-modal {
+  max-height: 88vh;
+  overflow-y: auto;
+}
+.account-modal h2 { color: var(--gold-bright); margin-top: 0; }
+.account-modal:focus { outline: none; }
+
+.account-intro,
+.account-note {
+  color: var(--text-dim);
+  font-size: 0.88em;
+  line-height: 1.5;
+}
+.account-note a { color: var(--gold-bright); }
+.account-loading { color: var(--text-dim); text-align: center; padding: 1.5em 0; }
+
+.account-error {
+  background: rgba(143, 28, 46, 0.22);
+  border: 1px solid var(--blood-red);
+  border-radius: 8px;
+  padding: 0.6em 0.8em;
+  margin: 0 0 0.8em;
+  font-size: 0.9em;
+}
+
+.account-body label {
+  display: block;
+  margin: 0.8em 0 0.3em;
+  font-size: 0.85em;
+  color: var(--text-dim);
+}
+.account-body input {
+  width: 100%;
+  padding: 0.7em 0.8em;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-panel-raised);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 1em;
+}
+.account-body input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+.account-body .big { width: 100%; margin-top: 1em; }
+
+.account-sep {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin: 1.2em 0 0.2em;
+  color: var(--text-dim);
+  font-size: 0.85em;
+}
+.account-sep::before,
+.account-sep::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+.account-switch { margin-top: 1em; text-align: center; }
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.8em;
+  margin-bottom: 1em;
+}
+.account-identity strong { display: block; }
+.account-email {
+  color: var(--text-dim);
+  font-size: 0.82em;
+  word-break: break-all;
+}
+.account-avatar {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--gold);
+  color: var(--gold-bright);
+  font-size: 1.4em;
+  font-weight: 700;
+}
+
+.account-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5em;
+}
+.account-tile {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.6em 0.7em;
+}
+.account-tile strong { display: block; font-size: 1.15em; }
+.account-tile span { color: var(--text-dim); font-size: 0.75em; }
+
+.account-subtitle {
+  margin: 1.2em 0 0.5em;
+  font-size: 0.95em;
+  color: var(--text-dim);
+}
+
+.account-trophies { display: flex; flex-wrap: wrap; gap: 0.4em; }
+.account-trophy {
+  padding: 0.3em 0.7em;
+  border-radius: 999px;
+  font-size: 0.78em;
+  border: 1px solid var(--border-subtle);
+}
+/* Les trophees non obtenus restent VISIBLES, en retrait : ils disent au joueur
+   ce qui reste a faire. Les masquer priverait la liste de son interet. */
+.account-trophy.won {
+  background: rgba(184, 149, 80, 0.18);
+  border-color: var(--gold);
+  color: var(--gold-bright);
+}
+.account-trophy.locked { color: var(--text-dim); opacity: 0.55; }
+
+.account-rename { display: flex; gap: 0.5em; align-items: center; }
+.account-rename input { flex: 1; }
+.account-logout { margin-top: 1.2em; color: var(--blood-red-bright); }
+
+/* Bloc "ce compte Google appartient deja a un profil" : n'apparait qu'apres un
+   rattachement refuse pour identite deja prise. Encadre, pour se lire comme
+   une proposition et non comme la suite du formulaire — l'action qu'il porte
+   abandonne la session en cours. */
+.account-reprise {
+  margin-top: 0.8em;
+  padding: 0.8em;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-panel-raised);
+}
+.account-reprise .account-note { margin: 0 0 0.4em; }
+
+/* Variante NEUTRE du bandeau : pour une situation qui a une issue ("ce compte
+   Google appartient deja a un profil"), pas pour un echec. Le rouge sang est
+   reserve a ce qui a vraiment echoue. */
+.account-error.info {
+  background: var(--bg-panel-raised);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}

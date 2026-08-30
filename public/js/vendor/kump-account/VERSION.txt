@@ -1,0 +1,3 @@
+kump-account 0.4.0
+copie du 2026-08-30 par npm run sync:kump
+NE PAS EDITER CES FICHIERS A LA MAIN - voir scripts/sync-kump.js

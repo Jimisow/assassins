@@ -119,6 +119,34 @@
     </div>
   </div>
 
+  <!-- Import map : donne au navigateur l'adresse des modules désignés par un
+       nom nu (`firebase/app`, `kump-account`). Assassins n'a aucun bundler —
+       sans elle, `import ... from 'kump-account'` échouerait.
+
+       ⚠️ Doit être déclarée AVANT tout <script type="module"> de la page :
+       une import map arrivant après le premier module est ignorée, et les
+       imports échouent avec « Failed to resolve module specifier ».
+
+       Firebase est épinglé sur 10.12.2, EXACTEMENT la version que
+       js/firebase-config.js charge par URL complète : même URL = un seul
+       téléchargement, une seule instance du SDK. Faire diverger les deux
+       chargerait Firebase deux fois (~150 Ko de plus) avec deux instances
+       d'Auth qui s'ignorent. Si l'une des deux change de version, changer
+       l'autre dans le même passage.
+
+       Les chemins de `kump-account` sont RELATIFS (`./js/...`) pour la même
+       raison que ceux du manifest et du service worker : GitHub Pages sert ce
+       projet sous /assassins/, pas à la racine du domaine. -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app": "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js",
+      "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
+      "kump-account": "./js/vendor/kump-account/index.js"
+    }
+  }
+  </script>
   <script type="module" src="js/host.js"></script>
   <script>
     if ("serviceWorker" in navigator) {

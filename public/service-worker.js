@@ -11,7 +11,7 @@
 // https://<utilisateur>.github.io/index.html (404) au lieu de
 // .../assassins/index.html. Meme raison pour `start_url`/`scope` dans
 // manifest.json.
-const CACHE_NAME = "assassins-shell-v4";
+const CACHE_NAME = "assassins-shell-v7";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -29,6 +29,28 @@ const SHELL_ASSETS = [
   "./js/ui-utils.js",
   "./js/network-status.js",
   "./js/pwa-install.js",
+  // <<< kump-account : liste generee par npm run sync:kump
+  "./js/vendor/kump-account/auth.js",
+  "./js/vendor/kump-account/catalog.js",
+  "./js/vendor/kump-account/core.js",
+  "./js/vendor/kump-account/fullProfile.js",
+  "./js/vendor/kump-account/gameData.js",
+  "./js/vendor/kump-account/index.js",
+  "./js/vendor/kump-account/leaderboard.js",
+  "./js/vendor/kump-account/messages.js",
+  "./js/vendor/kump-account/profile.js",
+  "./js/vendor/kump-account/providers.js",
+  "./js/vendor/kump-account/purchase.js",
+  "./js/vendor/kump-account/runs.js",
+  "./js/vendor/kump-account/session.js",
+  "./js/vendor/kump-account/shop.js",
+  "./js/vendor/kump-account/transport.js",
+  "./js/vendor/kump-account/ui/account.js",
+  "./js/vendor/kump-account/ui/dom.js",
+  "./js/vendor/kump-account/ui/index.js",
+  "./js/vendor/kump-account/ui/shop.js",
+  "./js/vendor/kump-account/ui/theme.js",
+  // kump-account >>>
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon.svg",
